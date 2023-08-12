@@ -11,6 +11,7 @@ export const ping = (req: Request, res: Response) => {
 
 export const getProjects = async (req: Request, res: Response) => {
     let projects = await Projects.findAll()
+    
     res.json({ projects });
 }
 
