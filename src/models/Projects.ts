@@ -24,6 +24,12 @@ export const Projects = sequelize.define<ProjectsInstance>('Projects', {
         type: DataTypes.STRING
     },
     tech: {
+        type: DataTypes.ARRAY
+    },
+    git: {
+        type: DataTypes.STRING
+    },
+    deploy: {
         type: DataTypes.STRING
     }
 }, {
