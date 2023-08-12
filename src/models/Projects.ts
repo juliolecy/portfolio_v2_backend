@@ -8,7 +8,7 @@ export interface ProjectsInstance extends Model {
    img: string;
    git: string;
    deploy: string;
-   tech: string;
+   tech: string | string[];
 
 }
 
@@ -29,7 +29,7 @@ export const Projects = sequelize.define<ProjectsInstance>('Projects', {
         type: DataTypes.STRING
     },
     tech: {
-        type: DataTypes.STRING
+        type: DataTypes.STRING 
     },
     git: {
         type: DataTypes.STRING

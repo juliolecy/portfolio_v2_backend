@@ -11,7 +11,13 @@ export const ping = (req: Request, res: Response) => {
 
 export const getProjects = async (req: Request, res: Response) => {
     let projects = await Projects.findAll()
+    projects.forEach((i)=>{
+        if(typeof(i.tech) === 'string' ){
+            let techArray = i.tech.split(',')
+            i.tech = techArray
+        }
     
+    }) 
     res.json({ projects });
 }
 
