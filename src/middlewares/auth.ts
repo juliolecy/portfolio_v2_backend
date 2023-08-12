@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express"
-import { User } from "../models/Projects";
+import { Projects } from "../models/Projects";
 import jwt from 'jsonwebtoken'
 import dotenv from 'dotenv'
 
