@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { Projects } from '../models/Projects';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv'
+import { Skills } from '../models/Skills';
 
 dotenv.config()
 
@@ -13,7 +14,7 @@ export const getProjects = async (req: Request, res: Response) => {
     let projects = await Projects.findAll()
     
     projects.forEach((i)=>{
-        i.img = `${process.env.BASE}/media/${i.img}`
+        i.img = `${process.env.BASE}/media/projects/${i.img}`
 
         if(typeof(i.tech) === 'string' ){
             let techArray = i.tech.split(',')
@@ -25,6 +26,7 @@ export const getProjects = async (req: Request, res: Response) => {
     }) 
     res.json({ projects });
 }
+
 
 // export const login = async (req: Request, res: Response) => {
 //     if(req.body.email && req.body.password) {
