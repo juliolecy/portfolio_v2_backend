@@ -2,14 +2,13 @@ import { Model, DataTypes } from 'sequelize';
 import { sequelize } from '../instances/pg';
 
 export interface ProjectsInstance extends Model {
-    id: number;
-   title: string;
-   desc: string;
-   img: string;
-   git: string;
-   deploy: string;
-   tech: string | string[];
-
+id: number;
+title: string;
+desc: string;
+img: string;
+git: string;
+deploy: string;
+tech: string | string[];
 }
 
 export const Projects = sequelize.define<ProjectsInstance>('Projects', {
