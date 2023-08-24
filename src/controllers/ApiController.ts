@@ -13,13 +13,13 @@ export const ping = (req: Request, res: Response) => {
 }
 
 export const GetProject = async (req: Request, res: Response) => {
-    const {title} = req.body
+    const {id} = req.body
 
-    if(!title || typeof(title) === undefined){
+    if(!id || typeof(id) === undefined){
         return res.json({ error: 'Insira um título.' });
     }
 
-    let project = await Projects.findOne({where:{title}})
+    let project = await Projects.findOne({where:{id}})
 
     if(!project || typeof(project) === undefined){
         return  res.json({ error: 'Projeto não encontrado.' });
