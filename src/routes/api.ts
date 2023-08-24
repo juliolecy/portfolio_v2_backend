@@ -30,7 +30,7 @@ const router = Router();
 router.get('/projects', ApiController.GetProjects);
 router.post('/register', ApiController.Register)
 router.post('/login', ApiController.Login)
-router.get('/project', ApiController.GetProject)
+router.post('/project', ApiController.GetProject)
 
 
 router.post('/project/create', checkToken, upload.single('img'), ApiController.CreateProject)
