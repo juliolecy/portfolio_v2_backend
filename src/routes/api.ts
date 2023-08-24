@@ -35,6 +35,7 @@ router.get('/project', ApiController.GetProject)
 
 router.post('/project/create', checkToken, upload.single('img'), ApiController.CreateProject)
 
-// router.post('/upload', ApiController.UploadFile)
+router.post('/project/edit', checkToken, upload.single('img'), ApiController.EditProject)
+
 
 export default router;

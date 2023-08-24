@@ -140,6 +140,58 @@ export const Login = async (req: Request, res: Response) => {
     }
 }
 
+export const EditProject = async (req: Request, res: Response) => {
+
+    const { id, title, git, deploy, desc, tech} = req.body
+  
+    if (!id || typeof(id) === undefined) {
+        return res.status(404).json({ error: 'Insira um id.' })
+    }
+
+    if (!title || typeof(title) === undefined) {
+        return res.status(404).json({ error: 'Insira um título.' })
+    }
+    
+    if (!git || typeof(git) === undefined) {
+        return res.status(404).json({ error: 'Insira um repositório' })
+    }
+    
+    if (!desc || typeof(desc) === undefined) {
+        return res.status(404).json({ error: 'Insira uma descrição.' })
+    }
+    
+    if (!deploy || typeof(deploy) === undefined) {
+        return res.status(404).json({ error: 'Insira um endereço.' })
+    }
+    if (!tech || typeof(tech) === undefined) {
+        return res.status(404).json({ error: 'Insira as tecnologias utilizadas.' })
+    }
+
+    if(req.file && typeof(req.file) !== undefined){
+        let img = `${req.file.filename}.jpg`
+        await sharp(req.file.path)
+        .resize(500, 500, {
+            fit: sharp.fit.cover
+        })
+        .toFormat('jpeg')
+        .toFile(`./public/media/projects/${img}`)
+
+
+        await unlink(req.file.path)
+
+        await Projects.update({ tech, deploy, desc, git, title, img}, {
+            where: {id}
+        })
+
+        return res.json({sucess: 'Projeto atualizado.'})
+    }
+
+await Projects.update({ tech, deploy, desc, git, title}, {
+    where: {id}
+})
+ return res.json({sucess: 'Projeto atualizado.'})
+}
+
 export const CreateProject = async (req: Request, res: Response) => {
 
     let img = ''
@@ -187,6 +239,7 @@ title, git, desc, deploy, img, tech
 
  return res.json({sucess: 'Projeto adicionado.'})
 }
+
 
 
    
