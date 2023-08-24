@@ -5,12 +5,41 @@ import dotenv from 'dotenv'
 import { Skills } from '../models/Skills';
 import { User } from '../models/User';
 import bcrypt from 'bcrypt'
-
-dotenv.config()
+import sharp from 'sharp'
+import {unlink} from 'fs/promises'
 
 export const ping = (req: Request, res: Response) => {
     res.json({pong: true});
 }
+
+export const GetProject = async (req: Request, res: Response) => {
+    const {title} = req.body
+
+    if(!title || typeof(title) === undefined){
+        return res.json({ error: 'Insira um título.' });
+    }
+
+    let project = await Projects.findOne({where:{title}})
+
+    if(!project || typeof(project) === undefined){
+        return  res.json({ error: 'Projeto não encontrado.' });
+    }
+    
+    // projects.forEach((i)=>{ 
+    //     i.img = `${process.env.BASE}/media/projects/${i.img}`
+
+    //     if(typeof(i.tech) === 'string' ){
+    //         let techArray = i.tech.split(',')
+    //         i.tech = techArray
+    //     }
+
+        
+    
+    // }) 
+
+    return  res.json({ project });
+}
+
 
 export const GetProjects = async (req: Request, res: Response) => {
     let projects = await Projects.findAll()
@@ -111,3 +140,54 @@ export const Login = async (req: Request, res: Response) => {
     }
 }
 
+export const CreateProject = async (req: Request, res: Response) => {
+
+    let img = ''
+    if(req.file){
+        let filename = `${req.file.filename}.jpg`
+        img = filename
+        await sharp(req.file.path)
+        .resize(500, 500, {
+            fit: sharp.fit.cover
+        })
+        .toFormat('jpeg')
+        .toFile(`./public/media/projects/${filename}`)
+
+        await unlink(req.file.path)
+
+    } else {
+        return res.json({error: 'Envie uma imagem.'})
+    }
+    
+    const { title, git, deploy, desc, tech} = req.body
+  
+
+if (!title || typeof(title) === undefined) {
+    return res.status(404).json({ error: 'Insira um título.' })
+}
+
+if (!git || typeof(git) === undefined) {
+    return res.status(404).json({ error: 'Insira um repositório' })
+}
+
+if (!desc || typeof(desc) === undefined) {
+    return res.status(404).json({ error: 'Insira uma descrição.' })
+}
+
+if (!deploy || typeof(deploy) === undefined) {
+    return res.status(404).json({ error: 'Insira um endereço.' })
+}
+if (!tech || typeof(tech) === undefined) {
+    return res.status(404).json({ error: 'Insira as tecnologias utilizadas.' })
+}
+
+ const project = Projects.create({
+title, git, desc, deploy, img, tech
+ })
+
+ return res.json({sucess: 'Projeto adicionado.'})
+}
+
+
+   
+   
