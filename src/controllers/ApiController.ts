@@ -16,7 +16,7 @@ export const GetProject = async (req: Request, res: Response) => {
     const {id} = req.body
 
     if(!id || typeof(id) === undefined){
-        return res.json({ error: 'Insira um título.' });
+        return res.json({ error: 'Insira um id.' });
     }
 
     let project = await Projects.findOne({where:{id}})
@@ -24,6 +24,8 @@ export const GetProject = async (req: Request, res: Response) => {
     if(!project || typeof(project) === undefined){
         return  res.json({ error: 'Projeto não encontrado.' });
     }
+    //LEMBRAR DE MUDAR O ENDEREÇO DE ENVIO DA IMAGEM 
+
     
     // projects.forEach((i)=>{ 
     //     i.img = `${process.env.BASE}/media/projects/${i.img}`

@@ -19,7 +19,7 @@ const upload = multer({
         cb(null,  allowed.includes(file.mimetype))
     },
     limits: {
-        fieldSize: 3000000 } // 3 mb
+        fieldSize: 30000000 } // 3 mb
 })
 
 import * as ApiController from '../controllers/ApiController';
