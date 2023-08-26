@@ -245,9 +245,16 @@ title, git, desc, deploy, img, tech
 export const ValidateToken = async (req: Request, res: Response) => {
     const {token} = req.body
     try{
-        jwt.verify(token, process.env.JWT_KEY as string)
-        console.log('Você está autorizado.')
-        return res.json({sucess: true})
+        const decoded = jwt.verify(token, process.env.JWT_KEY as string)
+        const {id} = decoded as jwt.JwtPayload
+        
+            const user = await User.findOne({where:{id}})
+
+        
+        console.log(decoded)
+        console.log(user)
+
+        return res.json({user})
     }catch(err){
         res.status(400).json({err: 'Acesso negado(2).'})
     }
