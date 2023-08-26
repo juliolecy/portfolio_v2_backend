@@ -242,6 +242,10 @@ title, git, desc, deploy, img, tech
  return res.json({sucess: 'Projeto adicionado.'})
 }
 
+export const ValidateToken = async (req: Request, res: Response) => {
+ return res.json({sucess: true})
+}
+
 
 
    

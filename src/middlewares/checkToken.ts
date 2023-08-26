@@ -15,6 +15,7 @@ return res.status(401).json({error: 'Acesso negado(1).'})
 //Validar token
 try{
     jwt.verify(token, process.env.JWT_KEY as string)
+    console.log('Você está autorizado.')
     next()
 }catch(err){
     res.status(400).json({err: 'Acesso negado(2).'})
