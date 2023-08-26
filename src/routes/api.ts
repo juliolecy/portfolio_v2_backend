@@ -33,7 +33,7 @@ router.post('/login', ApiController.Login)
 router.post('/project', ApiController.GetProject)
 router.post('/project/create', checkToken, upload.single('img'), ApiController.CreateProject)
 router.post('/project/edit', checkToken, upload.single('img'), ApiController.EditProject)
-router.post('/project/validatetoken', checkToken, ApiController.ValidateToken)
+router.post('/project/validatetoken', ApiController.ValidateToken)
 
 
 export default router;
