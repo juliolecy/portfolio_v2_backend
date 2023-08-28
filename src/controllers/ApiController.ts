@@ -260,7 +260,7 @@ if (!file || typeof(file) ==='undefined') {
          }
 
         await Projects.create({
-    title, git, desc, deploy, img: filename ,tech
+    title, git, desc, deploy, img: `${filename}?alt=media` ,tech
     })
 }); 
      
