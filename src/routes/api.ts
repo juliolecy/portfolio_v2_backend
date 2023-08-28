@@ -21,16 +21,18 @@ const upload = multer({
         cb(null,  allowed.includes(file.mimetype))
     },
     limits: {
-        fieldSize:  5 * 1024 * 1024 } // 3 mb
+        fieldSize:  5 * 1024 * 1024 } // 5 mb
 })
 
 const router = Router();
+
+router.post('/ping', ApiController.ping)
 
 router.get('/projects', ApiController.GetProjects);
 router.post('/register', ApiController.Register)
 router.post('/login', ApiController.Login)
 router.post('/project', ApiController.GetProject)
-router.post('/project/create', checkToken, upload.single('img'), ApiController.CreateProject)
+router.post('/create', checkToken, upload.single('img'), ApiController.CreateProject);
 router.post('/project/edit', checkToken, upload.single('img'), ApiController.EditProject)
 router.post('/validatetoken', ApiController.ValidateToken)
 

@@ -27,7 +27,6 @@ server.use(express.urlencoded({ extended: true }));
 
 ConnectDatabase()
 
-server.get('/ping', (req: Request, res: Response) => res.json({ pong: true }));
 
 server.use('/api', apiRoutes);
 

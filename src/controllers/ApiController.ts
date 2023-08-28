@@ -207,7 +207,6 @@ await Projects.update({ tech, deploy, desc, git, title}, {
  return res.json({sucess: 'Projeto atualizado.'})
 }
 
-
 export const CreateProject = async (req: Request, res: Response) => {
 const { title, git, deploy, desc, tech} = req.body
 
