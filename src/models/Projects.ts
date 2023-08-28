@@ -1,5 +1,5 @@
 import { Model, DataTypes } from 'sequelize';
-import { sequelize } from '../instances/pg';
+import { sequelize } from '../database/pg';
 
 export interface ProjectsInstance extends Model {
 id: number;

@@ -3,9 +3,20 @@ import path from 'path';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import apiRoutes from './routes/api';
-import {sequelize} from './instances/pg'
+import {ConnectDatabase} from './database/pg'
+import * as admin from 'firebase-admin';
 
 dotenv.config();
+
+const firebase_private_key_b64 = Buffer.from(process.env.FIREBASE_CREDENTIALS!, 'base64');
+const firebase_private_key = firebase_private_key_b64.toString('utf8');
+
+admin.initializeApp({
+credential: admin.credential.cert(JSON.parse(firebase_private_key)),
+storageBucket: process.env.STORAGE_BUCKET
+});
+
+export const storageBucket = admin.storage().bucket();
 
 const server = express();
 
@@ -14,14 +25,7 @@ server.use(express.json({ limit: '10mb' }))
 server.use(express.static(path.join(__dirname, '../public')));
 server.use(express.urlencoded({ extended: true }));
 
-sequelize
-  .authenticate()
-  .then(() => {
-    console.log('Connection sucessfuly.');
-  })
-  .catch((err) => {
-    console.error('Error while connecting to database', err);
-  });
+ConnectDatabase()
 
 server.get('/ping', (req: Request, res: Response) => res.json({ pong: true }));
 
@@ -29,16 +33,17 @@ server.use('/api', apiRoutes);
 
 server.use((req: Request, res: Response) => {
     res.status(404);
-    res.json({ error: 'Endpoint not found.' });
+    res.json({ error: 'Endpoint não encontrado.' });
 });
 
 const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
-    res.status(400); // Bad Request
+    res.status(400); 
     console.log(err);
-    res.json({ error: 'Something went wrong.' });
+    res.json({ error:'Erro interno.' });
 }
+
 server.use(errorHandler);
 
 server.listen(process.env.PORT, ()=>{
-    console.log('Server running at port: ' + process.env.PORT)
+  console.log('Server running at port: ' + process.env.PORT)
 });

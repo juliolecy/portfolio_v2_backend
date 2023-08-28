@@ -12,3 +12,16 @@ export const sequelize = new Sequelize(
         dialect: 'postgres'
     }
 );
+
+export const ConnectDatabase = ()=>{
+sequelize
+  .authenticate()
+    .then(() => {
+    console.log('Conectado ao banco de dados.');
+  })
+  .catch((err) => {
+    console.error('Erro durante a conexão ao banco de dados', err);
+  });
+
+}
+

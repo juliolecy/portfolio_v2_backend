@@ -1,12 +1,13 @@
 import { Request, Response } from 'express';
 import { Projects } from '../models/Projects';
 import jwt from 'jsonwebtoken';
-import dotenv from 'dotenv'
-import { Skills } from '../models/Skills';
 import { User } from '../models/User';
 import bcrypt from 'bcrypt'
 import sharp from 'sharp'
 import {unlink} from 'fs/promises'
+// firebaseConfig.ts
+import * as admin from 'firebase-admin';
+import { storageBucket } from '../server';
 
 export const ping = (req: Request, res: Response) => {
     res.json({pong: true});
@@ -46,8 +47,8 @@ export const GetProject = async (req: Request, res: Response) => {
 export const GetProjects = async (req: Request, res: Response) => {
     let projects = await Projects.findAll()
     
-    projects.forEach((i)=>{
-        i.img = `${process.env.BASE}/media/projects/${i.img}`
+    projects.forEach((i:any)=>{
+        i.img = `${process.env.STORAGE_BUCKET}/v0/b/${i.img}`
 
         if(typeof(i.tech) === 'string' ){
             let techArray = i.tech.split(',')
@@ -170,21 +171,38 @@ export const EditProject = async (req: Request, res: Response) => {
     }
 
     if(req.file && typeof(req.file) !== undefined){
-        let img = `${req.file.filename}.jpg`
-        await sharp(req.file.path)
-        .resize(500, 500, {
-            fit: sharp.fit.cover
-        })
-        .toFormat('jpeg')
-        .toFile(`./public/media/projects/${img}`)
+        const file = req.file   
+    // const imageBuffer = req.file.buffer;
+        const filename = `${Date.now()}_${file.originalname}`;
+        const fileUpload = storageBucket.file(filename);
+     //   const file = bucket.file(fileName);
 
+        const blobStream = fileUpload.createWriteStream({
+            metadata: {
+                contentType: file.mimetype,
+            },
+        }); 
+    
+        const errors: any = [];
 
-        await unlink(req.file.path)
-
-        await Projects.update({ tech, deploy, desc, git, title, img}, {
+        blobStream.on('error', (err) => {
+            errors.push(err)
+        });
+    
+        blobStream.on('finish', () => {});
+        blobStream.end(file.buffer);
+        
+         if(errors.length > 0 ){
+            return res.status(400).json({ errors })
+         }
+        
+        // blobStream.end(imageBuffer);
+        // await unlink(req.file.path)
+        
+        await Projects.update({ tech, deploy, desc, git, title, img: filename}, {
             where: {id}
         })
-
+        
         return res.json({sucess: 'Projeto atualizado.'})
     }
 
@@ -194,52 +212,62 @@ await Projects.update({ tech, deploy, desc, git, title}, {
  return res.json({sucess: 'Projeto atualizado.'})
 }
 
+
 export const CreateProject = async (req: Request, res: Response) => {
+const { title, git, deploy, desc, tech} = req.body
+const errors = [];
+if (!title || typeof title === 'undefined') {
+    errors.push('Insira um título.');
+}
+if (!git || typeof git === 'undefined') {
+    errors.push('Insira um repositório.');
+}
+if (!desc || typeof desc === 'undefined') {
+    errors.push('Insira uma descrição.');
+}
+if (!deploy || typeof deploy === 'undefined') {
+    errors.push('Insira um endereço.');
+}
+if (!tech || typeof tech === 'undefined') {
+    errors.push('Insira as tecnologias utilizadas.');
+}
 
-    let img = ''
-    if(req.file){
-        let filename = `${req.file.filename}.jpg`
-        img = filename
-        await sharp(req.file.path)
-        .resize(500, 500, {
-            fit: sharp.fit.cover
-        })
-        .toFormat('jpeg')
-        .toFile(`./public/media/projects/${filename}`)
+const file = req.file;
 
-        await unlink(req.file.path)
-
-    } else {
-        return res.json({error: 'Envie uma imagem.'})
-    }
+if (!file || typeof(file) ==='undefined') {
+    return res.status(400).json({error: 'Nenhuma imagem enviada.'});
+}
     
-    const { title, git, deploy, desc, tech} = req.body
-  
+    const filename = `${Date.now()}_${file.originalname}`;
+    const fileUpload = storageBucket.file(filename);
+    
+    const blobStream = fileUpload.createWriteStream({
+        metadata: {
+            contentType: file.mimetype,
+        },
+    }); 
 
-if (!title || typeof(title) === undefined) {
-    return res.status(404).json({ error: 'Insira um título.' })
-}
+    // const imageUrl = `https://storage.googleapis.com/v0/b/${storageBucket.name}/${filename}`;
+    // console.log(imageUrl)
 
-if (!git || typeof(git) === undefined) {
-    return res.status(404).json({ error: 'Insira um repositório' })
-}
+    
+    blobStream.on('error', (err) => {
+        errors.push(err)
+    });
 
-if (!desc || typeof(desc) === undefined) {
-    return res.status(404).json({ error: 'Insira uma descrição.' })
-}
+    blobStream.on('finish', () => {});
+    blobStream.end(file.buffer);
+    
+     if(errors.length > 0 ){
+        return res.status(400).json({ errors })
+     }
 
-if (!deploy || typeof(deploy) === undefined) {
-    return res.status(404).json({ error: 'Insira um endereço.' })
-}
-if (!tech || typeof(tech) === undefined) {
-    return res.status(404).json({ error: 'Insira as tecnologias utilizadas.' })
-}
+     const project = await Projects.create({
+        title, git, desc, deploy, img: filename , tech
+         })
+      
+return res.json({success: 'Projeto adicionado.'})
 
- const project = Projects.create({
-title, git, desc, deploy, img, tech
- })
-
- return res.json({sucess: 'Projeto adicionado.'})
 }
 
 export const ValidateToken = async (req: Request, res: Response) => {
@@ -247,16 +275,13 @@ export const ValidateToken = async (req: Request, res: Response) => {
     try{
         const decoded = jwt.verify(token, process.env.JWT_KEY as string)
         const {id} = decoded as jwt.JwtPayload
-        
-            const user = await User.findOne({where:{id}})
-
-        
+        const user = await User.findOne({where:{id}})
         console.log(decoded)
         console.log(user)
 
         return res.json({user})
     }catch(err){
-        res.status(400).json({err: 'Acesso negado(2).'})
+        return res.status(400).json({err: 'Acesso negado(2).'})
     }
 }
 

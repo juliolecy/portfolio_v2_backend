@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import { Auth } from '../middlewares/auth';
 import multer from 'multer'
+import * as ApiController from '../controllers/ApiController';
+import checkToken from '../middlewares/checkToken';
 
 // const storage = multer.diskStorage({
 //     destination: (req, file, cb)=>{
@@ -12,18 +14,15 @@ import multer from 'multer'
 // })
 
 const upload = multer({
-    dest: './tmp',
+    storage: multer.memoryStorage(),
     fileFilter: (req, file, cb)=>{
         const allowed: string[] = ['image/jpeg', 'image/jpg', 'image/png'];
 
         cb(null,  allowed.includes(file.mimetype))
     },
     limits: {
-        fieldSize: 30000000 } // 3 mb
+        fieldSize:  5 * 1024 * 1024 } // 3 mb
 })
-
-import * as ApiController from '../controllers/ApiController';
-import checkToken from '../middlewares/checkToken';
 
 const router = Router();
 

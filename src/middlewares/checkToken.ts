@@ -18,6 +18,7 @@ try{
     console.log('Você está autorizado.')
     next()
 }catch(err){
+    console.log('Você não está autorizado.')
     res.status(400).json({err: 'Acesso negado(2).'})
 }
 
