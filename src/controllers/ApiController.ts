@@ -4,9 +4,6 @@ import jwt from 'jsonwebtoken';
 import { User } from '../models/User';
 import bcrypt from 'bcrypt'
 import sharp from 'sharp'
-import {unlink} from 'fs/promises'
-// firebaseConfig.ts
-import * as admin from 'firebase-admin';
 import { storageBucket } from '../server';
 
 export const ping = (req: Request, res: Response) => {
@@ -172,10 +169,11 @@ export const EditProject = async (req: Request, res: Response) => {
 
     if(req.file && typeof(req.file) !== undefined){
         const file = req.file   
-    // const imageBuffer = req.file.buffer;
+        const resizedImageBuffer = await sharp(file.buffer)
+        .resize(500, 500)
+        .toBuffer();
         const filename = `${Date.now()}_${file.originalname}`;
         const fileUpload = storageBucket.file(filename);
-     //   const file = bucket.file(fileName);
 
         const blobStream = fileUpload.createWriteStream({
             metadata: {
@@ -189,20 +187,17 @@ export const EditProject = async (req: Request, res: Response) => {
             errors.push(err)
         });
     
-        blobStream.on('finish', () => {});
+        blobStream.on('finish', async () => {
+            if(errors.length > 0 ){
+               return res.status(400).json({ error: errors })
+            }
+
+            await Projects.update({ tech, deploy, desc, git, title, img: filename}, {
+                where: {id}
+            })
+
+        });
         blobStream.end(file.buffer);
-        
-         if(errors.length > 0 ){
-            return res.status(400).json({ errors })
-         }
-        
-        // blobStream.end(imageBuffer);
-        // await unlink(req.file.path)
-        
-        await Projects.update({ tech, deploy, desc, git, title, img: filename}, {
-            where: {id}
-        })
-        
         return res.json({sucess: 'Projeto atualizado.'})
     }
 
@@ -215,7 +210,8 @@ await Projects.update({ tech, deploy, desc, git, title}, {
 
 export const CreateProject = async (req: Request, res: Response) => {
 const { title, git, deploy, desc, tech} = req.body
-const errors = [];
+const errors: string[] = [];
+
 if (!title || typeof title === 'undefined') {
     errors.push('Insira um título.');
 }
@@ -232,11 +228,16 @@ if (!tech || typeof tech === 'undefined') {
     errors.push('Insira as tecnologias utilizadas.');
 }
 
+if(errors.length > 0){
+    return res.status(500).json({error: 'Tente novamente'})
+}
 const file = req.file;
 
 if (!file || typeof(file) ==='undefined') {
     return res.status(400).json({error: 'Nenhuma imagem enviada.'});
 }
+
+  const resizedImageBuffer = await sharp(file.buffer).resize(500, 500).toBuffer();
     
     const filename = `${Date.now()}_${file.originalname}`;
     const fileUpload = storageBucket.file(filename);
@@ -247,26 +248,21 @@ if (!file || typeof(file) ==='undefined') {
         },
     }); 
 
-    // const imageUrl = `https://storage.googleapis.com/v0/b/${storageBucket.name}/${filename}`;
-    // console.log(imageUrl)
-
     
     blobStream.on('error', (err) => {
-        errors.push(err)
+    console.log('Erro no envio da imagem', err)
     });
 
-    blobStream.on('finish', () => {});
-    blobStream.end(file.buffer);
-    
-     if(errors.length > 0 ){
-        return res.status(400).json({ errors })
-     }
-
-     const project = await Projects.create({
-        title, git, desc, deploy, img: filename , tech
-         })
-      
-return res.json({success: 'Projeto adicionado.'})
+    blobStream.on('finish',  async () => {
+        console.log('Finalizando')
+        const project = await Projects.create({
+           title, git, desc, deploy, img: filename , tech
+            })
+            
+           
+        });      
+        blobStream.end(resizedImageBuffer);
+        return  res.json({success: 'Projeto adicionado.'})
 
 }
 
