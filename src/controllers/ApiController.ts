@@ -45,7 +45,7 @@ export const GetProjects = async (req: Request, res: Response) => {
     let projects = await Projects.findAll()
     
     projects.forEach((i:any)=>{
-        i.img = `${process.env.STORAGE_BUCKET}/v0/b/${i.img}`
+        i.img = `https://firebasestorage.${process.env.UNIVERSE_DOMAIN}/v0/b/${process.env.PROJECT_ID}.appspot.com/o/${i.img}?alt=media`
 
         if(typeof(i.tech) === 'string' ){
             let techArray = i.tech.split(',')
@@ -260,7 +260,7 @@ if (!file || typeof(file) ==='undefined') {
          }
 
         await Projects.create({
-    title, git, desc, deploy, img: `${filename}?alt=media` ,tech
+    title, git, desc, deploy, img: `${filename}` ,tech
     })
 }); 
      
