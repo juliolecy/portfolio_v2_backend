@@ -197,7 +197,7 @@ export const EditProject = async (req: Request, res: Response) => {
             })
 
         });
-        blobStream.end(file.buffer);
+        blobStream.end(resizedImageBuffer);
         return res.json({sucess: 'Projeto atualizado.'})
     }
 
@@ -210,27 +210,26 @@ await Projects.update({ tech, deploy, desc, git, title}, {
 
 export const CreateProject = async (req: Request, res: Response) => {
 const { title, git, deploy, desc, tech} = req.body
-const errors: string[] = [];
 
-if (!title || typeof title === 'undefined') {
-    errors.push('Insira um título.');
-}
-if (!git || typeof git === 'undefined') {
-    errors.push('Insira um repositório.');
-}
-if (!desc || typeof desc === 'undefined') {
-    errors.push('Insira uma descrição.');
-}
-if (!deploy || typeof deploy === 'undefined') {
-    errors.push('Insira um endereço.');
-}
-if (!tech || typeof tech === 'undefined') {
-    errors.push('Insira as tecnologias utilizadas.');
+if (!title || typeof(title) === undefined) {
+    return res.status(404).json({ error: 'Insira um título.' })
 }
 
-if(errors.length > 0){
-    return res.status(500).json({error: 'Tente novamente'})
+if (!git || typeof(git) === undefined) {
+    return res.status(404).json({ error: 'Insira um repositório' })
 }
+
+if (!desc || typeof(desc) === undefined) {
+    return res.status(404).json({ error: 'Insira uma descrição.' })
+}
+
+if (!deploy || typeof(deploy) === undefined) {
+    return res.status(404).json({ error: 'Insira um endereço.' })
+}
+if (!tech || typeof(tech) === undefined) {
+    return res.status(404).json({ error: 'Insira as tecnologias utilizadas.' })
+}
+
 const file = req.file;
 
 if (!file || typeof(file) ==='undefined') {
@@ -248,19 +247,24 @@ if (!file || typeof(file) ==='undefined') {
         },
     }); 
 
-    
+    const errors: any = [];
     blobStream.on('error', (err) => {
     console.log('Erro no envio da imagem', err)
+    errors.push(err)
     });
 
     blobStream.on('finish',  async () => {
         console.log('Finalizando')
-        const project = await Projects.create({
-           title, git, desc, deploy, img: filename , tech
-            })
-            
-           
-        });      
+
+        if(errors.length > 0 ){
+            return res.status(400).json({ error: errors })
+         }
+
+        await Projects.create({
+    title, git, desc, deploy, img: filename ,tech
+    })
+}); 
+     
         blobStream.end(resizedImageBuffer);
         return  res.json({success: 'Projeto adicionado.'})
 
