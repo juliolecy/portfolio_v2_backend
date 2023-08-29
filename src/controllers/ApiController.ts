@@ -13,8 +13,8 @@ export const ping = (req: Request, res: Response) => {
 export const GetProject = async (req: Request, res: Response) => {
     const {id} = req.body
 
-    if(!id || typeof(id) === undefined){
-        return res.json({ error: 'Insira um id.' });
+    if(!id || typeof(id) === undefined ){
+        return res.json({ error: 'Insira um id válido.' });
     }
 
     let project = await Projects.findOne({where:{id}})
@@ -22,20 +22,8 @@ export const GetProject = async (req: Request, res: Response) => {
     if(!project || typeof(project) === undefined){
         return  res.json({ error: 'Projeto não encontrado.' });
     }
-    //LEMBRAR DE MUDAR O ENDEREÇO DE ENVIO DA IMAGEM 
 
-    
-    // projects.forEach((i)=>{ 
-    //     i.img = `${process.env.BASE}/media/projects/${i.img}`
-
-    //     if(typeof(i.tech) === 'string' ){
-    //         let techArray = i.tech.split(',')
-    //         i.tech = techArray
-    //     }
-
-        
-    
-    // }) 
+    project.img = `https://firebasestorage.${process.env.UNIVERSE_DOMAIN}/v0/b/${process.env.PROJECT_ID}.appspot.com/o/${project.img}?alt=media`
 
     return  res.json({ project });
 }
@@ -51,60 +39,58 @@ export const GetProjects = async (req: Request, res: Response) => {
             let techArray = i.tech.split(',')
             i.tech = techArray
         }
-
-        
     
     }) 
     res.json({ projects });
 }
 
-export const Register = async (req: Request, res: Response) => {
-    const { name, email, password, confirmpassword } = req.body
-    if (!email) {
-        return res.status(422).json({ error: 'Insira um email.' })
-    }
-    if (!name) {
-        return res.status(422).json({ error: 'Insira um nome.' })
-    }
+// export const Register = async (req: Request, res: Response) => {
+//     const { name, email, password, confirmpassword } = req.body
+//     if (!email) {
+//         return res.status(422).json({ error: 'Insira um email.' })
+//     }
+//     if (!name) {
+//         return res.status(422).json({ error: 'Insira um nome.' })
+//     }
 
-    if (!password) {
-        return res.status(422).json({ error: 'Insira uma senha.' })
-    }
-    if (!confirmpassword) {
-        return res.status(422).json({ error: 'Confirme sua senha.' })
-    }
-    if (password !== confirmpassword) {
-        return res.status(422).json({ error: 'As senhas devem ser iguais.' })
-    }
+//     if (!password) {
+//         return res.status(422).json({ error: 'Insira uma senha.' })
+//     }
+//     if (!confirmpassword) {
+//         return res.status(422).json({ error: 'Confirme sua senha.' })
+//     }
+//     if (password !== confirmpassword) {
+//         return res.status(422).json({ error: 'As senhas devem ser iguais.' })
+//     }
 
-    // Verificar se o email já existe no banco
-    const userSearch = await User.findAll({ where: {email} })
-    if (userSearch.length > 0) {
-        return res.status(422).json({ error: 'Este email já está sendo utilizado.' })
-    }
+//     // Verificar se o email já existe no banco
+//     const userSearch = await User.findAll({ where: {email} })
+//     if (userSearch.length > 0) {
+//         return res.status(422).json({ error: 'Este email já está sendo utilizado.' })
+//     }
 
-    //Criar senha
-    const salt = await bcrypt.genSalt(12)
-    const passwordHash = await bcrypt.hash(password, salt)
+//     //Criar senha
+//     const salt = await bcrypt.genSalt(12)
+//     const passwordHash = await bcrypt.hash(password, salt)
 
-    //Criar usuário
+//     //Criar usuário
     
-    try { 
-        // await user.save()
-        // res.status(201).json({sucess: 'Usuário criado.'})
+//     try { 
+//         // await user.save()
+//         // res.status(201).json({sucess: 'Usuário criado.'})
 
-        const newUser = await User.create({
-            name,
-            email,
-            passwordHash
+//         const newUser = await User.create({
+//             name,
+//             email,
+//             passwordHash
 
-        });
-        res.status(201).json({ success: 'Usuário criado.' });
-    } catch(e){
-        console.log(e)
-        res.status(500).json({error: 'Erro interno, tente novamente mais tarde.'})
-    }
-}
+//         });
+//         res.status(201).json({ success: 'Usuário criado.' });
+//     } catch(e){
+//         console.log(e)
+//         res.status(500).json({error: 'Erro interno, tente novamente mais tarde.'})
+//     }
+// }
 
 
 export const Login = async (req: Request, res: Response) => {
@@ -142,24 +128,20 @@ export const Login = async (req: Request, res: Response) => {
 
 export const EditProject = async (req: Request, res: Response) => {
 
-    const { id, title, git, deploy, desc, tech} = req.body
+const { id, title, git, deploy, desc, tech} = req.body
   
     if (!id || typeof(id) === undefined) {
         return res.status(404).json({ error: 'Insira um id.' })
     }
-
     if (!title || typeof(title) === undefined) {
         return res.status(404).json({ error: 'Insira um título.' })
     }
-    
     if (!git || typeof(git) === undefined) {
         return res.status(404).json({ error: 'Insira um repositório' })
     }
-    
     if (!desc || typeof(desc) === undefined) {
         return res.status(404).json({ error: 'Insira uma descrição.' })
     }
-    
     if (!deploy || typeof(deploy) === undefined) {
         return res.status(404).json({ error: 'Insira um endereço.' })
     }
@@ -167,44 +149,40 @@ export const EditProject = async (req: Request, res: Response) => {
         return res.status(404).json({ error: 'Insira as tecnologias utilizadas.' })
     }
 
-    if(req.file && typeof(req.file) !== undefined){
-        const file = req.file   
-        const resizedImageBuffer = await sharp(file.buffer)
-        .resize(500, 500)
-        .toBuffer();
-        const filename = `${Date.now()}_${file.originalname}`;
-        const fileUpload = storageBucket.file(filename);
+if(req.file && typeof(req.file) !== undefined){
+const file = req.file   
+const resizedImageBuffer = await sharp(file.buffer).resize(500, 500).toBuffer();
+const filename = `${Date.now()}_${file.originalname}`;
+const fileUpload = storageBucket.file(filename);
 
-        const blobStream = fileUpload.createWriteStream({
-            metadata: {
-                contentType: file.mimetype,
-            },
-        }); 
-    
-        const errors: any = [];
+const blobStream = fileUpload.createWriteStream({
+metadata: {
+    contentType: file.mimetype,
+},
+}); 
 
-        blobStream.on('error', (err) => {
-            errors.push(err)
-        });
-    
-        blobStream.on('finish', async () => {
-            if(errors.length > 0 ){
-               return res.status(400).json({ error: errors })
-            }
+const errors: any = [];
 
-            await Projects.update({ tech, deploy, desc, git, title, img: filename}, {
-                where: {id}
-            })
+blobStream.on('error', (err) => {
+errors.push(err)
+});
 
-        });
-        blobStream.end(resizedImageBuffer);
-        return res.json({sucess: 'Projeto atualizado.'})
-    }
+blobStream.on('finish', async () => {
+if(errors.length > 0 ){
+    return res.status(400).json({ error: errors })
+}
 
-await Projects.update({ tech, deploy, desc, git, title}, {
+await Projects.update({ tech, deploy, desc, git, title, img: filename}, {
     where: {id}
 })
- return res.json({sucess: 'Projeto atualizado.'})
+
+});
+blobStream.end(resizedImageBuffer);
+return res.json({sucess: 'Projeto atualizado.'})
+} else {
+await Projects.update({ tech, deploy, desc, git, title}, {where: {id}})
+return res.json({sucess: 'Projeto atualizado. Imagem mantida.'})
+}
 }
 
 export const CreateProject = async (req: Request, res: Response) => {
@@ -265,7 +243,7 @@ if (!file || typeof(file) ==='undefined') {
 }); 
      
         blobStream.end(resizedImageBuffer);
-        return  res.json({success: 'Projeto adicionado.'})
+        return  res.json({success: 'Projeto adicionado. '})
 
 }
 

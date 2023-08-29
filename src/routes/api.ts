@@ -28,10 +28,9 @@ const router = Router();
 
 router.post('/ping', ApiController.ping)
 
-router.get('/projects', ApiController.GetProjects);
-router.post('/register', ApiController.Register)
-router.post('/login', ApiController.Login)
 router.post('/project', ApiController.GetProject)
+router.get('/projects', ApiController.GetProjects);
+router.post('/login', ApiController.Login)
 router.post('/create', checkToken, upload.single('img'), ApiController.CreateProject);
 router.post('/project/edit', checkToken, upload.single('img'), ApiController.EditProject)
 router.post('/validatetoken', ApiController.ValidateToken)
