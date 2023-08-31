@@ -5,6 +5,7 @@ import { User } from '../models/User';
 import bcrypt from 'bcrypt'
 import sharp from 'sharp'
 import { storageBucket } from '../server';
+import { Certificates } from '../models/Certificates';
 
 export const ping = (req: Request, res: Response) => {
     res.json({pong: true});
@@ -28,7 +29,6 @@ export const GetProject = async (req: Request, res: Response) => {
     return  res.json({ project });
 }
 
-
 export const GetProjects = async (req: Request, res: Response) => {
     let projects = await Projects.findAll()
     
@@ -42,6 +42,66 @@ export const GetProjects = async (req: Request, res: Response) => {
     
     }) 
     res.json({ projects });
+}
+
+export const AddCertificate = async (req: Request, res: Response) => {
+    const {title} = req.body
+    
+    if (!title || typeof(title) === undefined) {
+        return res.status(404).json({ error: 'Insira um título.' })
+    }
+    
+    const file = req.file;
+    
+    if (!file || typeof(file) ==='undefined') {
+        return res.status(400).json({error: 'Nenhuma imagem enviada.'});
+    }
+    
+    const resizedImageBuffer = await sharp(file.buffer).resize(500, 500).toBuffer();
+        
+        const filename = `${Date.now()}_${file.originalname}`;
+        const fileUpload = storageBucket.file(filename);
+        
+        const blobStream = fileUpload.createWriteStream({
+            metadata: {
+                contentType: file.mimetype,
+            },
+        }); 
+    
+        const errors: any = [];
+        blobStream.on('error', (err) => {
+        console.log('Erro no envio da imagem', err)
+        errors.push(err)
+        });
+    
+        blobStream.on('finish',  async () => {
+            console.log('Finalizando')
+    
+            if(errors.length > 0 ){
+                return res.status(400).json({ error: errors })
+             }
+    
+            await Certificates.create({
+            title, src: `${filename}` })
+    }); 
+         
+            blobStream.end(resizedImageBuffer);
+            return  res.json({success: 'Certificado adicionado. '})
+    
+    }
+export const GetCertificates = async (req: Request, res: Response) => {
+    let certificates = await Certificates.findAll()
+    
+    certificates.forEach((i:any)=>{
+        i.img = `https://firebasestorage.${process.env.UNIVERSE_DOMAIN}/v0/b/${process.env.PROJECT_ID}.appspot.com/o/${i.img}?alt=media`
+
+        if(typeof(i.tech) === 'string' ){
+            let techArray = i.tech.split(',')
+            i.tech = techArray
+        }
+    
+    }) 
+    res.json({ certificates });
 }
 
 // export const Register = async (req: Request, res: Response) => {
