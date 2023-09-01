@@ -45,9 +45,13 @@ export const GetProjects = async (req: Request, res: Response) => {
 }
 
 export const AddCertificate = async (req: Request, res: Response) => {
-    const {title} = req.body
+    const {title, totalhours} = req.body
     
     if (!title || typeof(title) === undefined) {
+        return res.status(404).json({ error: 'Insira um título.' })
+    }
+
+    if (!totalhours || typeof(totalhours) === undefined) {
         return res.status(404).json({ error: 'Insira um título.' })
     }
     
@@ -82,7 +86,7 @@ export const AddCertificate = async (req: Request, res: Response) => {
              }
     
             await Certificates.create({
-            title, src: `${filename}` })
+            title,totalhours, src: `${filename}` })
     }); 
          
             blobStream.end(resizedImageBuffer);
@@ -93,12 +97,7 @@ export const GetCertificates = async (req: Request, res: Response) => {
     let certificates = await Certificates.findAll()
     
     certificates.forEach((i:any)=>{
-        i.img = `https://firebasestorage.${process.env.UNIVERSE_DOMAIN}/v0/b/${process.env.PROJECT_ID}.appspot.com/o/${i.img}?alt=media`
-
-        if(typeof(i.tech) === 'string' ){
-            let techArray = i.tech.split(',')
-            i.tech = techArray
-        }
+        i.src = `https://firebasestorage.${process.env.UNIVERSE_DOMAIN}/v0/b/${process.env.PROJECT_ID}.appspot.com/o/${i.img}?alt=media`
     
     }) 
     res.json({ certificates });

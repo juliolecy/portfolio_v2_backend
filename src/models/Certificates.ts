@@ -5,6 +5,7 @@ export interface ProjectsInstance extends Model {
 id: number;
 title: string;
 src: string;
+totalhours:number;
 }
 
 export const Certificates = sequelize.define<ProjectsInstance>('Certificates', {
@@ -21,6 +22,9 @@ export const Certificates = sequelize.define<ProjectsInstance>('Certificates', {
         type: DataTypes.STRING,
         unique: true
     },
+    totalhours: {
+        type: DataTypes.INTEGER,
+    }
 }, {
     tableName: 'certificates',
     timestamps: false
