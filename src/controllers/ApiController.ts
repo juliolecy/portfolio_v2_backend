@@ -104,7 +104,7 @@ export const GetCertificates = async (req: Request, res: Response) => {
 let certificates = await Certificates.findAll()
 
 certificates.forEach((i:any)=>{
-i.src = `https://firebasestorage.${process.env.UNIVERSE_DOMAIN}/v0/b/${process.env.PROJECT_ID}.appspot.com/o/${i.src}?alt=media`
+i.src = `https://firebasestorage.${process.env.UNIVERSE_DOMAIN}/v0/b/${process.env.PROJECT_ID}.appspot.com/o/${i.firebase_img}?alt=media`
 })
 res.json({ certificates });
 }
