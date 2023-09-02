@@ -45,14 +45,22 @@ export const GetProjects = async (req: Request, res: Response) => {
 }
 
 export const AddCertificate = async (req: Request, res: Response) => {
-    const {title, totalhours} = req.body
+    const {title, total_hours, created_by, skill_svg} = req.body
 
     if (!title || typeof(title) === undefined) {
         return res.status(404).json({ error: 'Insira um título.' })
     }
 
-    if (!totalhours || typeof(totalhours) === undefined) {
-        return res.status(404).json({ error: 'Insira um título.' })
+    if (!total_hours || typeof(total_hours) === undefined) {
+        return res.status(404).json({ error: 'Insira as horas.' })
+    }
+
+    if (!created_by || typeof(created_by) === undefined) {
+        return res.status(404).json({ error: 'Insira um criador.' })
+    }
+
+    if (!skill_svg || typeof(skill_svg) === undefined) {
+        return res.status(404).json({ error: 'Insira um svg.' })
     }
 
     const file = req.file;
@@ -61,7 +69,7 @@ export const AddCertificate = async (req: Request, res: Response) => {
         return res.status(400).json({error: 'Nenhuma imagem enviada.'});
     }
 
-    const resizedImageBuffer = await sharp(file.buffer).resize(500, 500).toBuffer();
+    // const resizedImageBuffer = await sharp(file.buffer).resize(500, 500).toBuffer();
 
         const filename = `${Date.now()}_${file.originalname}`;
         const fileUpload = storageBucket.file(filename);
@@ -85,25 +93,23 @@ export const AddCertificate = async (req: Request, res: Response) => {
                 return res.status(400).json({ error: errors })
              }
 
-            await Certificates.create({
-            title,totalhours, src: `${filename}` })
-    });
+    await Certificates.create({ title,total_hours, firebase_img: `${filename}`, skill_svg, created_by })
+});
 
-            blobStream.end(resizedImageBuffer);
+            blobStream.end(file.buffer);
             return  res.json({success: 'Certificado adicionado. '})
 
     }
 export const GetCertificates = async (req: Request, res: Response) => {
-    let certificates = await Certificates.findAll()
+let certificates = await Certificates.findAll()
 
-    certificates.forEach((i:any)=>{
-        i.src = `https://firebasestorage.${process.env.UNIVERSE_DOMAIN}/v0/b/${process.env.PROJECT_ID}.appspot.com/o/${i.src}?alt=media`
-
-    })
-    res.json({ certificates });
+certificates.forEach((i:any)=>{
+i.src = `https://firebasestorage.${process.env.UNIVERSE_DOMAIN}/v0/b/${process.env.PROJECT_ID}.appspot.com/o/${i.src}?alt=media`
+})
+res.json({ certificates });
 }
 
-// export const Register = async (req: Request, res: Response) => {
+// export const Registe r = async (req: Request, res: Response) => {
 //     const { name, email, password, confirmpassword } = req.body
 //     if (!email) {
 //         return res.status(422).json({ error: 'Insira um email.' })
@@ -244,7 +250,7 @@ return res.json({sucess: 'Projeto atualizado. Imagem mantida.'})
 }
 }
 
-export const CreateProject = async (req: Request, res: Response) => {
+export const CreateProject =  async (req: Request, res: Response) => {
 const { title, git, deploy, desc, tech} = req.body
 
 if (!title || typeof(title) === undefined) {

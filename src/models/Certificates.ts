@@ -4,8 +4,11 @@ import { sequelize } from '../database/pg';
 export interface ProjectsInstance extends Model {
 id: number;
 title: string;
-src: string;
-totalhours:number;
+total_hours:number;
+created_by: string;
+skill_svg: string;
+firebase_img: string
+
 }
 
 export const Certificates = sequelize.define<ProjectsInstance>('Certificates', {
@@ -18,11 +21,17 @@ export const Certificates = sequelize.define<ProjectsInstance>('Certificates', {
         type: DataTypes.STRING,
         unique: true
     },
-    src: {
+    firebase_img: {
         type: DataTypes.STRING,
         unique: true
     },
-    totalhours: {
+    skill_svg:{
+        type: DataTypes.STRING,
+    },
+    created_by:{
+        type: DataTypes.STRING,
+    },
+    total_hours:{
         type: DataTypes.INTEGER,
     }
 }, {

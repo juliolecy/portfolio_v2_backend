@@ -31,7 +31,7 @@ router.post('/ping', ApiController.ping)
 router.post('/project', ApiController.GetProject)
 router.get('/projects', ApiController.GetProjects);
 router.get('/certificates', ApiController.GetCertificates);
-router.post('/addcertificate',checkToken,upload.single('src'), ApiController.AddCertificate);
+router.post('/addcertificate',checkToken,upload.single('firebase_img'), ApiController.AddCertificate);
 router.post('/login', ApiController.Login)
 router.post('/create', checkToken, upload.single('img'), ApiController.CreateProject);
 router.post('/project/edit', checkToken, upload.single('img'), ApiController.EditProject)
