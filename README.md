@@ -1,3 +1,5 @@
+_Este repositório não será atualizado. A API será reconstruída em Python._
+
 ---
 <h1 align="center"> 
  Portfolio_v2 API
