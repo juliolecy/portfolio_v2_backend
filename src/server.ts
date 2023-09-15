@@ -4,19 +4,8 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import apiRoutes from './routes/api';
 import {ConnectDatabase} from './database/pg'
-import * as admin from 'firebase-admin';
 
 dotenv.config();
-
-const firebase_private_key_b64 = Buffer.from(process.env.FIREBASE_CREDENTIALS!, 'base64');
-const firebase_private_key = firebase_private_key_b64.toString('utf8');
-
-admin.initializeApp({
-credential: admin.credential.cert(JSON.parse(firebase_private_key)),
-storageBucket: process.env.STORAGE_BUCKET
-});
-
-export const storageBucket = admin.storage().bucket();
 
 const server = express();
 
@@ -27,7 +16,6 @@ server.use(express.urlencoded({ extended: true }));
 
 ConnectDatabase()
 
-
 server.use('/api', apiRoutes);
 
 server.use((req: Request, res: Response) => {
@@ -36,7 +24,7 @@ server.use((req: Request, res: Response) => {
 });
 
 const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
-    res.status(400); 
+    res.status(400);
     console.log(err);
     res.json({ error:'Erro interno.' });
 }

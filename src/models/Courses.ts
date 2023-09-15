@@ -1,17 +1,19 @@
 import { Model, DataTypes } from 'sequelize';
 import { sequelize } from '../database/pg';
 
-export interface ProjectsInstance extends Model {
+export interface CoursesInstance extends Model {
 id: number;
 title: string;
 total_hours:number;
 created_by: string;
-skill_svg: string;
-firebase_img: string
+svg: string;
+status:boolean;
+certificate: any;
+topics: string;
 
 }
 
-export const Certificates = sequelize.define<ProjectsInstance>('Certificates', {
+export const Courses = sequelize.define<CoursesInstance>('Courses', {
     id: {
         primaryKey: true,
         autoIncrement: true,
@@ -21,20 +23,27 @@ export const Certificates = sequelize.define<ProjectsInstance>('Certificates', {
         type: DataTypes.STRING,
         unique: true
     },
-    firebase_img: {
+    certificate: {
         type: DataTypes.STRING,
         unique: true
     },
-    skill_svg:{
+    svg:{
         type: DataTypes.STRING,
     },
     created_by:{
         type: DataTypes.STRING,
     },
+    topics:{
+        type: DataTypes.STRING,
+    },
+    status:{
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
     total_hours:{
         type: DataTypes.INTEGER,
     }
 }, {
-    tableName: 'certificates',
+    tableName: 'courses',
     timestamps: false
 });

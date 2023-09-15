@@ -4,15 +4,6 @@ import multer from 'multer'
 import * as ApiController from '../controllers/ApiController';
 import checkToken from '../middlewares/checkToken';
 
-// const storage = multer.diskStorage({
-//     destination: (req, file, cb)=>{
-//         cb(null, './tmp')
-//     },
-//     filename: (req, file, cb)=>{
-//         cb(null, `${file.fieldname+Date.now()}.jpg`)
-//     }
-// })
-
 const upload = multer({
     storage: multer.memoryStorage(),
     fileFilter: (req, file, cb)=>{
@@ -30,10 +21,10 @@ router.post('/ping', ApiController.ping)
 
 router.post('/project', ApiController.GetProject)
 router.get('/projects', ApiController.GetProjects);
-router.get('/certificates', ApiController.GetCertificates);
-router.post('/addcertificate',checkToken,upload.single('firebase_img'), ApiController.AddCertificate);
+router.get('/courses', ApiController.GetCourses);
+router.post('/addcourse',checkToken,upload.single('certificate'), ApiController.AddCourse);
 router.post('/login', ApiController.Login)
-router.post('/create', checkToken, upload.single('img'), ApiController.CreateProject);
+router.post('/addproject', checkToken, upload.single('img'), ApiController.CreateProject);
 router.post('/project/edit', checkToken, upload.single('img'), ApiController.EditProject)
 router.post('/validatetoken', ApiController.ValidateToken)
 

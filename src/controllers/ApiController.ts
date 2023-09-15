@@ -4,8 +4,8 @@ import jwt from 'jsonwebtoken';
 import { User } from '../models/User';
 import bcrypt from 'bcrypt'
 import sharp from 'sharp'
-import { storageBucket } from '../server';
-import { Certificates } from '../models/Certificates';
+import { Courses } from '../models/Courses';
+import fs from 'fs';
 
 export const ping = (req: Request, res: Response) => {
     res.json({pong: true});
@@ -24,7 +24,8 @@ export const GetProject = async (req: Request, res: Response) => {
         return  res.json({ error: 'Projeto não encontrado.' });
     }
 
-    project.img = `https://firebasestorage.${process.env.UNIVERSE_DOMAIN}/v0/b/${process.env.PROJECT_ID}.appspot.com/o/${project.img}?alt=media`
+    project.img = Buffer.from(project.img, 'base64')
+
 
     return  res.json({ project });
 }
@@ -32,23 +33,24 @@ export const GetProject = async (req: Request, res: Response) => {
 export const GetProjects = async (req: Request, res: Response) => {
     let projects = await Projects.findAll()
 
-    projects.forEach((i:any)=>{
-        i.img = `https://firebasestorage.${process.env.UNIVERSE_DOMAIN}/v0/b/${process.env.PROJECT_ID}.appspot.com/o/${i.img}?alt=media`
-
-        if(typeof(i.tech) === 'string' ){
-            let techArray = i.tech.split(',')
-            i.tech = techArray
+    projects.forEach((item:any)=>{
+        if(typeof(item.tech) === 'string' ){
+            let techArray = item.tech.split(',')
+            item.tech = techArray
         }
-
     })
     res.json({ projects });
 }
 
-export const AddCertificate = async (req: Request, res: Response) => {
-    const {title, total_hours, created_by, skill_svg} = req.body
+export const AddCourse = async (req: Request, res: Response) => {
+    const {title, topics, svg, total_hours, created_by, status} = req.body
 
     if (!title || typeof(title) === undefined) {
         return res.status(404).json({ error: 'Insira um título.' })
+    }
+
+    if (!topics ||typeof(topics) === undefined) {
+        return res.status(404).json({ error: 'Insira os tópicos' })
     }
 
     if (!total_hours || typeof(total_hours) === undefined) {
@@ -59,57 +61,36 @@ export const AddCertificate = async (req: Request, res: Response) => {
         return res.status(404).json({ error: 'Insira um criador.' })
     }
 
-    if (!skill_svg || typeof(skill_svg) === undefined) {
+    if (!svg || typeof(svg) === undefined) {
         return res.status(404).json({ error: 'Insira um svg.' })
     }
-
+    if (!status || typeof(status) === undefined) {
+        return res.status(404).json({ error: 'Insira a conclusão do curso.' })
+    }
     const file = req.file;
 
     if (!file || typeof(file) ==='undefined') {
         return res.status(400).json({error: 'Nenhuma imagem enviada.'});
     }
 
-    // const resizedImageBuffer = await sharp(file.buffer).resize(500, 500).toBuffer();
+    const base64Image = file.buffer.toString('base64')
 
-        const filename = `${Date.now()}_${file.originalname}`;
-        const fileUpload = storageBucket.file(filename);
+    await Courses.create({ title, certificate: base64Image, topics, status, total_hours, svg, created_by })
 
-        const blobStream = fileUpload.createWriteStream({
-            metadata: {
-                contentType: file.mimetype,
-            },
-        });
-
-        const errors: any = [];
-        blobStream.on('error', (err) => {
-        console.log('Erro no envio da imagem', err)
-        errors.push(err)
-        });
-
-        blobStream.on('finish',  async () => {
-            console.log('Finalizando')
-
-            if(errors.length > 0 ){
-                return res.status(400).json({ error: errors })
-             }
-
-    await Certificates.create({ title,total_hours, firebase_img: `${filename}`, skill_svg, created_by })
-});
-
-            blobStream.end(file.buffer);
             return  res.json({success: 'Certificado adicionado. '})
+ }
 
+export const GetCourses = async (req: Request, res: Response) => {
+    try{
+        let courses = await Courses.findAll()
+        return res.json({ courses });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ err: 'Erro ao obter cursos.' });
     }
-export const GetCertificates = async (req: Request, res: Response) => {
-let certificates = await Certificates.findAll()
-
-certificates.forEach((i:any)=>{
-i.firebase_img = `https://firebasestorage.${process.env.UNIVERSE_DOMAIN}/v0/b/${process.env.PROJECT_ID}.appspot.com/o/${i.firebase_img}?alt=media`
-})
-res.json({ certificates });
 }
 
-// export const Registe r = async (req: Request, res: Response) => {
+// export const Register = async (req: Request, res: Response) => {
 //     const { name, email, password, confirmpassword } = req.body
 //     if (!email) {
 //         return res.status(422).json({ error: 'Insira um email.' })
@@ -218,31 +199,31 @@ if(req.file && typeof(req.file) !== undefined){
 const file = req.file
 const resizedImageBuffer = await sharp(file.buffer).resize(500, 500).toBuffer();
 const filename = `${Date.now()}_${file.originalname}`;
-const fileUpload = storageBucket.file(filename);
 
-const blobStream = fileUpload.createWriteStream({
-metadata: {
-    contentType: file.mimetype,
-},
-});
+// const fileUpload = storageBucket.file(filename);
+
+// const blobStream = fileUpload.createWriteStream({
+// metadata: {
+//     contentType: file.mimetype,
+// },
+// });
 
 const errors: any = [];
 
-blobStream.on('error', (err) => {
-errors.push(err)
-});
+// blobStream.on('error', (err) => {
+// errors.push(err)
+// });
 
-blobStream.on('finish', async () => {
-if(errors.length > 0 ){
-    return res.status(400).json({ error: errors })
-}
+// blobStream.on('finish', async () => {
+// if(errors.length > 0 ){
+//     return res.status(400).json({ error: errors })
+// }
 
 await Projects.update({ tech, deploy, desc, git, title, img: filename}, {
     where: {id}
 })
 
-});
-blobStream.end(resizedImageBuffer);
+// blobStream.end(resizedImageBuffer);
 return res.json({sucess: 'Projeto atualizado.'})
 } else {
 await Projects.update({ tech, deploy, desc, git, title}, {where: {id}})
@@ -272,43 +253,27 @@ if (!tech || typeof(tech) === undefined) {
     return res.status(404).json({ error: 'Insira as tecnologias utilizadas.' })
 }
 
-const file = req.file;
+try{
+    if (!req.file) {
+        return res.status(400).json({ error: 'Nenhuma imagem foi enviada' });
+      }
 
-if (!file || typeof(file) ==='undefined') {
-    return res.status(400).json({error: 'Nenhuma imagem enviada.'});
+      const resizedImageBuffer = await sharp(req.file.buffer)
+      .resize({ width: 500, height: 500 })
+      .toBuffer();
+
+      const resizedImageBase64 = resizedImageBuffer.toString('base64');
+
+      await Projects.create({
+        title, git, desc, deploy, img: resizedImageBase64  ,tech
+        })
+
+     return res.status(200).json({ sucess: 'Projecto adicionado com sucesso'});
+
+} catch (err){
+    console.error('Erro ao fazer upload da imagem:', err);
+    return res.status(500).json({ error: 'Erro interno do servidor' });
 }
-
-  const resizedImageBuffer = await sharp(file.buffer).resize(500, 500).toBuffer();
-
-    const filename = `${Date.now()}_${file.originalname}`;
-    const fileUpload = storageBucket.file(filename);
-
-    const blobStream = fileUpload.createWriteStream({
-        metadata: {
-            contentType: file.mimetype,
-        },
-    });
-
-    const errors: any = [];
-    blobStream.on('error', (err) => {
-    console.log('Erro no envio da imagem', err)
-    errors.push(err)
-    });
-
-    blobStream.on('finish',  async () => {
-        console.log('Finalizando')
-
-        if(errors.length > 0 ){
-            return res.status(400).json({ error: errors })
-         }
-
-        await Projects.create({
-    title, git, desc, deploy, img: `${filename}` ,tech
-    })
-});
-
-        blobStream.end(resizedImageBuffer);
-        return  res.json({success: 'Projeto adicionado. '})
 
 }
 
