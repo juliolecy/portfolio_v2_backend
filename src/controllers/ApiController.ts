@@ -90,6 +90,25 @@ export const GetCourses = async (req: Request, res: Response) => {
     }
 }
 
+export const GetCourse = async (req: Request, res: Response) => {
+    const {id} = req.body
+
+    if(!id || typeof(id) === undefined ){
+        return res.json({ error: 'Insira um id válido.' });
+    }
+
+    try{
+        let course = await Courses.findOne({where:{id}})
+        if(!course || typeof(course) === undefined){
+            return  res.json({ error: 'Projeto não encontrado.' });
+        }
+        return res.json({ course });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ err: 'Erro ao obter curso.' });
+    }
+}
+
 // export const Register = async (req: Request, res: Response) => {
 //     const { name, email, password, confirmpassword } = req.body
 //     if (!email) {

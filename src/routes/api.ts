@@ -27,6 +27,6 @@ router.post('/login', ApiController.Login)
 router.post('/addproject', checkToken, upload.single('img'), ApiController.CreateProject);
 router.post('/project/edit', checkToken, upload.single('img'), ApiController.EditProject)
 router.post('/validatetoken', ApiController.ValidateToken)
-
+router.post('/course', ApiController.GetCourse)
 
 export default router;
